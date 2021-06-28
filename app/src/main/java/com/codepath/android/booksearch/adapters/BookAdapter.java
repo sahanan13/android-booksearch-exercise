@@ -1,6 +1,7 @@
 package com.codepath.android.booksearch.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -8,11 +9,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.codepath.android.booksearch.R;
+import com.codepath.android.booksearch.activities.BookDetailActivity;
 import com.codepath.android.booksearch.models.Book;
+
+import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,29 +40,45 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
     }
 
     // View lookup cache
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         public ImageView ivCover;
         public TextView tvTitle;
         public TextView tvAuthor;
+        private Context context;
 
         public ViewHolder(final View itemView, final OnItemClickListener clickListener) {
             // Stores the itemView in a public final member variable that can be used
             // to access the context from any ViewHolder instance.
             super(itemView);
 
-            ivCover = (ImageView)itemView.findViewById(R.id.ivBookCover);
-            tvTitle = (TextView)itemView.findViewById(R.id.tvTitle);
-            tvAuthor = (TextView)itemView.findViewById(R.id.tvAuthor);
+            ivCover = (ImageView) itemView.findViewById(R.id.ivBookCover);
+            tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
+            tvAuthor = (TextView) itemView.findViewById(R.id.tvAuthor);
 
+            this.context = mContext;
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     clickListener.onItemClick(itemView, getAdapterPosition());
                 }
             });
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            int position = getAdapterPosition(); // gets item position
+            if (position != RecyclerView.NO_POSITION) { // Check if an item was deleted, but the user clicked it before the UI removed it
+                Book book = mBooks.get(position);
+                // We can access the data within the views
+                //Toast.makeText(context, tvName.getText(), Toast.LENGTH_SHORT).show();
+                //create intent for details activity
+                Intent intent = new Intent(context, BookDetailActivity.class);
+                intent.putExtra(Book.class.getSimpleName(), Parcels.wrap(book));
+                context.startActivity(intent);
+            }
         }
     }
-
     public BookAdapter(Context context, ArrayList<Book> aBooks) {
         mBooks = aBooks;
         mContext = context;
@@ -93,6 +114,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
                 .apply(new RequestOptions()
                 .placeholder(R.drawable.ic_nocover))
                 .into(viewHolder.ivCover);
+
+
         // Return the completed view to render on screen
     }
 
